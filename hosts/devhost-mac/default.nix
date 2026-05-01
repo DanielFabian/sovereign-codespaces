@@ -20,6 +20,10 @@
     autoUpgradeFlake = "github:DanielFabian/sovereign-codespaces#devhost-mac";
     osDisk = "/dev/vda";
     workspaceDevice = "/dev/vdb";
+    git = {
+      userName = "Daniel Fabian";
+      userEmail = "daniel.fabian@integral-it.ch";
+    };
   };
 
   # Swapfile rationale on this variant differs from Hyper-V: Apple

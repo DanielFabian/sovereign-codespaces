@@ -19,6 +19,10 @@
     autoUpgradeFlake = "github:DanielFabian/sovereign-codespaces#devhost-hyperv";
     osDisk = "/dev/sda";
     workspaceDevice = "/dev/sdb";
+    git = {
+      userName = "Daniel Fabian";
+      userEmail = "daniel.fabian@integral-it.ch";
+    };
   };
 
   # Swapfile. Two roles under Hyper-V Dynamic Memory:

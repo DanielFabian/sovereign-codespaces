@@ -1,0 +1,9 @@
+{
+    "name": "test: nix-via-host + host-ssh-keys (from ghcr)",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+    "features": {
+        "ghcr.io/danielfabian/sovereign-codespaces/nix-via-host:latest": {},
+        "ghcr.io/danielfabian/sovereign-codespaces/host-ssh-keys:latest": {}
+    },
+    "remoteUser": "vscode"
+}

@@ -20,6 +20,8 @@ in
   imports = [
     ./wipe.nix
     ./nix-share.nix
+    ./gitconfig.nix
+    ./banner.nix
     ../docker.nix
   ];
 
@@ -171,11 +173,11 @@ in
       '';
     };
 
-    # First-boot user SSH keypair + MOTD advertisement. Every re-image
-    # produces a fresh key; you re-register the pubkey on GitHub. The MOTD
-    # prints it so you see it immediately on first SSH login.
+    # First-boot user SSH keypair. Every re-image produces a fresh key;
+    # you re-register the pubkey on GitHub. Presentation (motd/issue) is
+    # owned by ./banner.nix, which reads id_ed25519.pub off disk.
     systemd.services.devhost-user-ssh-key = {
-      description = "Generate dany's SSH keypair and publish pubkey via MOTD";
+      description = "Generate dany's SSH keypair";
       wantedBy = [ "multi-user.target" ];
       after = [
         "home.mount"
@@ -198,13 +200,6 @@ in
         if [ ! -f "$KEY" ]; then
           runuser -u dany -- ssh-keygen -t ed25519 -f "$KEY" -N "" -C "dany@devhost"
         fi
-        {
-          echo ""
-          echo "=== devhost: user SSH public key (register on GitHub) ==="
-          cat "$KEY.pub"
-          echo "=========================================================="
-          echo ""
-        } > /etc/motd
       '';
     };
 

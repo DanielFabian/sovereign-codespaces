@@ -31,14 +31,15 @@ In your `devcontainer.json`:
 {
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
-    "ghcr.io/danielfabian/nixos-home/nix-via-host:0": {}
+    "ghcr.io/danielfabian/sovereign-codespaces/nix-via-host:latest": {}
   }
 }
 ```
 
-The `:0` tag tracks the current 0.x line. Pin to `:0.2.0` if you want
-exact version immutability. Reference the feature by local path
-(`"./features/nix-via-host": {}`) when iterating on it in this repo.
+The `:latest` tag tracks the most recent publish. Pin to `:0` for the
+current 0.x line, or `:0.2.0` for exact version immutability. Reference
+the feature by local path (`"./features/nix-via-host": {}`) when iterating
+on it in this repo.
 
 The Feature contributes:
 

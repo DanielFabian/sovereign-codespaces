@@ -1,0 +1,15 @@
+{
+    "id": "host-ssh-keys",
+    "version": "0.1.0",
+    "name": "Host SSH Keys",
+    "description": "Bind-mount the host's ~/.ssh into the container (read-only). Lets you `git push` and `ssh` from inside a devcontainer using the host's keys, with no in-container key material to leak. Pairs with the sovereign-codespaces devhost where the user's key is passphrase-less by design.",
+    "documentationURL": "https://github.com/DanielFabian/sovereign-codespaces/tree/main/features/host-ssh-keys",
+    "mounts": [
+        {
+            "source": "${localEnv:HOME}/.ssh",
+            "target": "/home/vscode/.ssh",
+            "type": "bind",
+            "readonly": true
+        }
+    ]
+}
