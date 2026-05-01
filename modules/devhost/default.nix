@@ -141,6 +141,15 @@ in
     };
     security.sudo.wheelNeedsPassword = false;
 
+    # Ensure /home/dany exists with correct ownership after /home is mounted
+    # from the workspace disk. Without this, useradd's home creation can race
+    # the mount: the home dir gets created on the underlying root fs, then
+    # the workspace ext4 mounts on top of /home empty (and owned by root).
+    # tmpfiles runs after local-fs.target, so /home is mounted by here.
+    systemd.tmpfiles.rules = [
+      "d /home/dany 0700 dany users -"
+    ];
+
     # First-boot workspace disk init. Formats `devhost.workspaceDevice` as
     # ext4 with label "workspace" iff it's present and has no existing
     # filesystem signature. Idempotent: subsequent boots find the label and
