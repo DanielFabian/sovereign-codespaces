@@ -1,0 +1,37 @@
+{
+    "name": "sovereign-codespaces dev",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+    "features": {
+        "ghcr.io/devcontainers/features/nix:1": {
+            "multiUser": true,
+            "extraNixConfig": "experimental-features = nix-command flakes"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "jnoortheen.nix-ide",
+                "mhutchie.git-graph"
+            ],
+            "settings": {
+                "nix.enableLanguageServer": true,
+                "nix.serverPath": "nil",
+                "nix.serverSettings": {
+                    "nil": {
+                        "formatting": {
+                            "command": [
+                                "nixfmt"
+                            ]
+                        }
+                    }
+                },
+                "editor.formatOnSave": true,
+                "[nix]": {
+                    "editor.defaultFormatter": "jnoortheen.nix-ide"
+                }
+            }
+        }
+    },
+    "postCreateCommand": ".devcontainer/post-create.sh",
+    "remoteUser": "vscode"
+}
