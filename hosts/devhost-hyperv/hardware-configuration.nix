@@ -20,11 +20,18 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
 
-  # Hyper-V synthetic drivers. storvsc: disks. netvsc: network. utils: KVP.
+  # Hyper-V synthetic drivers.
+  #   hv_storvsc — disks
+  #   hv_netvsc  — network
+  #   hyperv_fb  — framebuffer; without this, fbcon has nothing to bind to
+  #                and the kernel virtual terminals (/dev/tty1, etc.) never
+  #                appear on the vmconnect screen even though getty starts.
+  #   hv_utils   — KVP / time / vss integration with the host
   boot.initrd.availableKernelModules = [
     "hv_storvsc"
     "hv_vmbus"
     "hv_netvsc"
+    "hyperv_fb"
   ];
   boot.kernelModules = [ "hv_utils" ];
 
