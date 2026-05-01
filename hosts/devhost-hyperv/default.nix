@@ -17,8 +17,12 @@
 
   devhost = {
     autoUpgradeFlake = "github:DanielFabian/sovereign-codespaces#devhost-hyperv";
-    osDisk = "/dev/sda";
-    workspaceDevice = "/dev/sdb";
+    # Address disks by SCSI controller slot, not kernel name. Provision the
+    # VM with the OS VHD on slot 0 and the workspace VHD on slot 1.
+    # See hardware-configuration.nix for the rationale.
+    osDisk = "/dev/disk/by-path/acpi-MSFT1000:00-scsi-0:0:0:0";
+    workspaceDevice = "/dev/disk/by-path/acpi-MSFT1000:00-scsi-0:0:0:1";
+    partSep = "-part";
     git = {
       userName = "Daniel Fabian";
       userEmail = "daniel.fabian@integral-it.ch";

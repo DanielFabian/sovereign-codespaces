@@ -10,6 +10,7 @@
 
   devhost = {
     osDisk = "/dev/vda";
+    workspaceDevice = "/dev/vdb";
     installer = {
       flakeUrl = "github:DanielFabian/sovereign-codespaces";
       hostAttr = "devhost-mac";

@@ -19,18 +19,29 @@ in
   options.devhost = {
     osDisk = lib.mkOption {
       type = lib.types.str;
-      default = "/dev/sda";
       description = ''
-        Block device that holds the OS image. Hyper-V Gen2 presents disks as
-        /dev/sd*; Apple Virtualization presents virtio-blk as /dev/vd*.
+        Block device that holds the OS image. Prefer stable identifiers under
+        /dev/disk/by-path or /dev/disk/by-id over kernel-assigned names like
+        /dev/sd* — SCSI enumeration order is not guaranteed to match the
+        order in which you attached disks to the VM controller.
       '';
     };
     workspaceDevice = lib.mkOption {
       type = lib.types.str;
-      default = "/dev/sdb";
       description = ''
-        Second block device used as the /home workspace disk. Formatted on
-        first boot by devhost-init-workspace.service iff it has no signature.
+        Second block device used as the /home workspace disk. Same advice as
+        osDisk: use a stable identifier. Formatted on first boot by
+        devhost-init-workspace.service iff it has no signature.
+      '';
+    };
+    partSep = lib.mkOption {
+      type = lib.types.str;
+      default = "";
+      description = ''
+        Separator between a disk path and its partition number. Empty for
+        kernel names (/dev/sda → /dev/sda1). "-part" for /dev/disk/by-path
+        and /dev/disk/by-id (…-scsi-0:0:0:0 → …-scsi-0:0:0:0-part1). "p" for
+        nvme-style names (/dev/nvme0n1 → /dev/nvme0n1p1).
       '';
     };
   };

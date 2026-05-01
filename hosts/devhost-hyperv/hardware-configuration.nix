@@ -1,8 +1,10 @@
 # Hyper-V Gen2 VM hardware configuration.
 #
-# Gen2 VMs are UEFI-only; disks appear via the hv_storvsc driver as /dev/sdX.
-# sda = OS disk (built into the image), sdb = workspace disk (formatted on
-# first boot by systemd.services.devhost-init-workspace).
+# Gen2 VMs are UEFI-only; disks appear via the hv_storvsc driver. Provision
+# convention (set in your New-VM script): SCSI controller slot 0 = OS disk,
+# slot 1 = workspace disk. We address them via /dev/disk/by-path so the
+# config doesn't depend on the kernel's SCSI enumeration order — which has
+# been observed to swap /dev/sda and /dev/sdb between boots / installs.
 {
   config,
   lib,
@@ -13,7 +15,6 @@
 {
   imports = [
     (modulesPath + "/profiles/qemu-guest.nix")
-    (modulesPath + "/profiles/headless.nix")
   ];
 
   boot.loader.systemd-boot.enable = true;

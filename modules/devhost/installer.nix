@@ -150,11 +150,11 @@ in
         partprobe ${diskCfg.osDisk} || true
         udevadm settle --timeout=30
 
-        # Partition device naming: /dev/sda → /dev/sda1, but /dev/nvme0n1 →
-        # /dev/nvme0n1p1. Hyper-V and Apple Virtualization both expose plain
-        # sd*/vd*, so simple suffix concatenation works for our targets.
-        ESP=${diskCfg.osDisk}1
-        ROOT=${diskCfg.osDisk}2
+        # Partition naming uses devhost.partSep: "" for /dev/sda → /dev/sda1,
+        # "-part" for /dev/disk/by-path/…-scsi-0:0:0:0 → …-part1, "p" for
+        # /dev/nvme0n1 → /dev/nvme0n1p1.
+        ESP=${diskCfg.osDisk}${diskCfg.partSep}1
+        ROOT=${diskCfg.osDisk}${diskCfg.partSep}2
 
         mkfs.fat  -F 32 -n BOOT  "$ESP"
         mkfs.ext4 -L   nixos    "$ROOT"
