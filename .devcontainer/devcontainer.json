@@ -5,7 +5,8 @@
         "ghcr.io/devcontainers/features/nix:1": {
             "multiUser": true,
             "extraNixConfig": "experimental-features = nix-command flakes"
-        }
+        },
+        "ghcr.io/danielfabian/sovereign-codespaces/host-ssh-keys:latest": {}
     },
     "customizations": {
         "vscode": {
