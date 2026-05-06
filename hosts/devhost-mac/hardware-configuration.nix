@@ -48,4 +48,12 @@
   services.timesyncd.enable = lib.mkDefault true;
 
   nixpkgs.hostPlatform = lib.mkDefault "aarch64-linux";
+
+  # Surface kernel printk on both virtio-console (so headless serial.log
+  # captures everything) and the framebuffer (so `--gui` shows the boot).
+  # Last `console=` wins for the init terminal; all of them get printk.
+  boot.kernelParams = [
+    "console=hvc0"
+    "console=tty0"
+  ];
 }

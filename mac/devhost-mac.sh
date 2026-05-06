@@ -53,6 +53,13 @@ cmd_create() {
 }
 
 cmd_up() {
+  local gui=0
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --gui) gui=1; shift ;;
+      *) die "unknown 'up' arg: $1" ;;
+    esac
+  done
   [[ -e "$OS_DISK" ]]    || die "no os disk; run 'create' first"
   [[ -e "$WS_DISK" ]]    || die "no workspace disk; run 'create' first"
   local iso
@@ -75,7 +82,10 @@ cmd_up() {
   #     "vmnet-shared" subtype
   # First-run iteration on the Mac will resolve these; the structure is right.
   log "booting devhost-mac (vfkit, NAT networking, ISO attached for re-install)"
+  local gui_flag=()
+  if (( gui )); then gui_flag=(--gui); log "  with GUI window"; fi
   exec vfkit \
+    "${gui_flag[@]}" \
     --cpus "$VCPUS" \
     --memory "$MEMORY_MIB" \
     --bootloader "efi,variable-store=$EFI_STORE,create" \
@@ -146,7 +156,7 @@ devhost-mac — host-side launcher for the aarch64 NixOS devhost.
 
 Usage:
   devhost-mac create     allocate disks, prepare state dir
-  devhost-mac up         boot the VM (foreground)
+  devhost-mac up [--gui]    boot the VM (foreground; --gui opens a window)
   devhost-mac ssh [...]  discover IP via DHCP lease, exec ssh
   devhost-mac status     show state dir contents
   devhost-mac destroy    rm -rf state dir (confirm required)
