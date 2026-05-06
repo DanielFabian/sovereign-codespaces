@@ -194,6 +194,7 @@ in
       ];
       script = ''
         set -eu
+        install -d -o dany -g users -m 0755 /home/dany
         SSHDIR=/home/dany/.ssh
         KEY=$SSHDIR/id_ed25519
         install -d -o dany -g users -m 0700 "$SSHDIR"
