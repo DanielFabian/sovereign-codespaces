@@ -21,6 +21,9 @@ OS_DISK="$STATE_DIR/os.img"
 WS_DISK="$STATE_DIR/workspace.img"
 ISO_PATH="$STATE_DIR/iso"     # expect: $STATE_DIR/iso/devhost-mac.iso
 EFI_STORE="$STATE_DIR/efi-vars"
+GVPROXY_SOCK="$STATE_DIR/gvproxy.sock"
+GVPROXY_LOG="$STATE_DIR/gvproxy.log"
+GVPROXY_PID="$STATE_DIR/gvproxy.pid"
 
 # Sizing — generous defaults; cattle disks, easy to recreate.
 OS_DISK_SIZE="${DEVHOST_MAC_OS_SIZE:-40G}"
@@ -28,6 +31,7 @@ WS_DISK_SIZE="${DEVHOST_MAC_WS_SIZE:-200G}"
 VCPUS="${DEVHOST_MAC_VCPUS:-8}"
 MEMORY_MIB="${DEVHOST_MAC_MEMORY:-16384}"
 SSH_USER="${DEVHOST_MAC_SSH_USER:-dany}"
+SSH_PORT="${DEVHOST_MAC_SSH_PORT:-2222}"
 
 die() { echo "devhost-mac: $*" >&2; exit 1; }
 log() { echo "devhost-mac: $*" >&2; }
@@ -78,10 +82,27 @@ cmd_up() {
   #   - exact spelling of boot-priority attribute on virtio-blk devices
   #     (vfkit accepts a comma-keyed device spec; "deviceId" / "bootIndex"
   #     attribute name has changed across vfkit versions)
-  #   - whether the vmnet NAT mode auto-leases an IP without explicit
-  #     "vmnet-shared" subtype
   # First-run iteration on the Mac will resolve these; the structure is right.
-  log "booting devhost-mac (vfkit, NAT networking, ISO attached for re-install)"
+  if [[ -f "$GVPROXY_PID" ]] && kill -0 "$(cat "$GVPROXY_PID")" 2>/dev/null; then
+    die "gvproxy already running with pid $(cat "$GVPROXY_PID"); stop the old VM first"
+  fi
+  rm -f "$GVPROXY_SOCK" "$GVPROXY_PID"
+
+  log "starting gvproxy (host 127.0.0.1:$SSH_PORT -> guest :22)"
+  gvproxy \
+    --mtu 1500 \
+    --ssh-port "$SSH_PORT" \
+    --listen-vfkit "unixgram://$GVPROXY_SOCK" \
+    --log-file "$GVPROXY_LOG" \
+    --pid-file "$GVPROXY_PID" &
+  local gvproxy_pid=$!
+  cleanup() {
+    kill "$gvproxy_pid" 2>/dev/null || true
+    rm -f "$GVPROXY_SOCK" "$GVPROXY_PID"
+  }
+  trap cleanup EXIT INT TERM
+
+  log "booting devhost-mac (vfkit, gvproxy networking, ISO attached for re-install)"
   local gui_args=()
   if (( gui )); then
     log "  with GUI window"
@@ -98,7 +119,7 @@ cmd_up() {
     --device "virtio-blk,path=$OS_DISK" \
     --device "virtio-blk,path=$WS_DISK" \
     --device "virtio-blk,path=$iso,readonly" \
-    --device "virtio-net,nat,mac=72:20:43:00:00:01" \
+    --device "virtio-net,unixSocketPath=$GVPROXY_SOCK,mac=5a:94:ef:e4:0c:ee" \
     --device "virtio-rng" \
     --device "virtio-serial,logFilePath=$STATE_DIR/serial.log"
   # Boot priority: vfkit boots virtio-blk devices in CLI order by default,
@@ -130,24 +151,7 @@ cmd_status() {
 }
 
 cmd_ssh() {
-  # Discover the VM's IP by matching the MAC we set in cmd_up against
-  # macOS's DHCP lease file. Apple's vmnet NAT subnet is 192.168.64.0/24.
-  local mac="72:20:43:00:00:01"
-  local lease_file="/var/db/dhcpd_leases"
-  [[ -r "$lease_file" ]] || die "cannot read $lease_file (vmnet NAT leases live here)"
-  local ip
-  ip="$(awk -v mac="$mac" '
-    BEGIN{IGNORECASE=1}
-    /^{/{rec=""}
-    {rec=rec"\n"$0}
-    /^}/{
-      if (rec ~ ("hw_address=1," mac) || rec ~ ("hw_address=" mac)) {
-        match(rec, /ip_address=([0-9.]+)/, m); print m[1]; exit
-      }
-    }' "$lease_file")"
-  [[ -n "$ip" ]] || die "no DHCP lease found for $mac yet; is the VM booted?"
-  log "devhost-mac IP: $ip"
-  exec ssh "$SSH_USER@$ip" "$@"
+  exec ssh -p "$SSH_PORT" "$SSH_USER@127.0.0.1" "$@"
 }
 
 case "${1:-}" in
@@ -163,12 +167,13 @@ devhost-mac — host-side launcher for the aarch64 NixOS devhost.
 Usage:
   devhost-mac create     allocate disks, prepare state dir
   devhost-mac up [--gui]    boot the VM (foreground; --gui opens a window)
-  devhost-mac ssh [...]  discover IP via DHCP lease, exec ssh
+  devhost-mac ssh [...]  exec ssh via gvproxy localhost forward
   devhost-mac status     show state dir contents
   devhost-mac destroy    rm -rf state dir (confirm required)
 
 State dir: $STATE_DIR
 Override sizing via DEVHOST_MAC_OS_SIZE / DEVHOST_MAC_WS_SIZE / DEVHOST_MAC_VCPUS / DEVHOST_MAC_MEMORY.
+Override SSH port via DEVHOST_MAC_SSH_PORT (default: 2222).
 
 Place the installer ISO at \$STATE_DIR/iso/devhost-mac.iso. Download from:
   https://github.com/DanielFabian/sovereign-codespaces/releases

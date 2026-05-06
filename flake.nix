@@ -61,6 +61,7 @@
             name = "devhost-mac";
             runtimeInputs = [
               pkgs.vfkit
+              pkgs.gvproxy
               pkgs.coreutils
               pkgs.gawk
               pkgs.openssh
