@@ -47,5 +47,31 @@
             ./hosts/devhost-mac/installer.nix
           ];
         }).config.system.build.isoImage;
+
+      # Host-side launcher for the Mac devhost, callable as:
+      #   nix run github:DanielFabian/sovereign-codespaces#devhost-mac -- <subcmd>
+      # Wraps vfkit (Apple Virtualization.framework via a Go CLI) plus a
+      # small state-dir convention. See mac/devhost-mac.sh for behavior.
+      packages.aarch64-darwin =
+        let
+          pkgs = import nixpkgs { system = "aarch64-darwin"; };
+        in
+        {
+          devhost-mac = pkgs.writeShellApplication {
+            name = "devhost-mac";
+            runtimeInputs = [
+              pkgs.vfkit
+              pkgs.coreutils
+              pkgs.gawk
+              pkgs.openssh
+            ];
+            text = builtins.readFile ./mac/devhost-mac.sh;
+          };
+        };
+
+      apps.aarch64-darwin.devhost-mac = {
+        type = "app";
+        program = "${self.packages.aarch64-darwin.devhost-mac}/bin/devhost-mac";
+      };
     };
 }

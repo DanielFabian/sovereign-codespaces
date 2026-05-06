@@ -48,16 +48,13 @@ in
         system's authorized_keys.
       '';
     };
-    ejectDevice = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = "/dev/sr0";
-      description = ''
-        Optical/cdrom device to eject after install completes, so the VM
-        doesn't reboot back into the ISO. Set to null to skip (e.g. on
-        hypervisors that don't expose an eject-able cdrom).
-      '';
-    };
   };
+  # Note: the auto-installer deliberately does NOT eject the install media.
+  # The expected VM-side configuration is HDD boot priority above ISO, so
+  # normal boots come up on disk and a `sudo devhost-wipe` followed by
+  # reboot falls through to the ISO for unattended re-install — entirely
+  # over SSH, no host-side intervention.
+
 
   config = {
     # Allow the installer to reach into unfree if the devhost closure needs
@@ -123,7 +120,6 @@ in
         openssh
         coreutils
         gnused
-        eject
       ];
       script = ''
         set -eux
@@ -174,15 +170,12 @@ in
           --no-root-password \
           --no-channel-copy
 
-        echo "devhost-installer: install complete, ejecting media and rebooting in 10s"
+        echo "devhost-installer: install complete, rebooting in 10s"
         sync
-        # Best-effort eject so the VM boots from disk instead of the ISO again.
-        ${
-          if cfg.ejectDevice == null then
-            "# ejectDevice = null; skipping"
-          else
-            "eject ${cfg.ejectDevice} || true"
-        }
+        # Don't eject the ISO. The VM's firmware boot order has HDD above
+        # ISO, so on next boot it picks up the freshly-installed system.
+        # Keeping the ISO attached means a future `sudo devhost-wipe` over
+        # SSH leaves the VM able to reinstall itself without host help.
         sleep 10
         systemctl reboot
       '';
