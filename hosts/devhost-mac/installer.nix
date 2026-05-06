@@ -9,8 +9,9 @@
   ];
 
   devhost = {
-    osDisk = "/dev/vda";
-    workspaceDevice = "/dev/vdb";
+    osDisk = "/dev/disk/by-path/pci-0000:00:06.0";
+    workspaceDevice = "/dev/disk/by-path/pci-0000:00:07.0";
+    partSep = "-part";
     installer = {
       flakeUrl = "github:DanielFabian/sovereign-codespaces";
       hostAttr = "devhost-mac";

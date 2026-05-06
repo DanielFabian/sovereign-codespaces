@@ -16,7 +16,7 @@
   ];
 
   boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = false;
+  boot.loader.efi.canTouchEfiVariables = true;
 
   # virtio drivers for Apple Virtualization. Kept minimal — the framework
   # exposes only virtio-blk, virtio-net, virtio-rng, and a virtio-console.

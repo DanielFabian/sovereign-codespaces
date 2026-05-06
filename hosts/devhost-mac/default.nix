@@ -18,8 +18,15 @@
 
   devhost = {
     autoUpgradeFlake = "github:DanielFabian/sovereign-codespaces#devhost-mac";
-    osDisk = "/dev/vda";
-    workspaceDevice = "/dev/vdb";
+    # Stable by-path identifiers. Kernel-assigned vd[abc] ordering is not
+    # stable across boots under vfkit (same lesson learned on Hyper-V); PCI
+    # topology is. The mapping below is the empirical assignment vfkit gives
+    # the launcher's CLI order: OS first, workspace second, ISO third —
+    # PCI slots 06, 07, 05 respectively. If you reorder devices in
+    # mac/devhost-mac.sh, update these accordingly.
+    osDisk = "/dev/disk/by-path/pci-0000:00:06.0";
+    workspaceDevice = "/dev/disk/by-path/pci-0000:00:07.0";
+    partSep = "-part";
     git = {
       userName = "Daniel Fabian";
       userEmail = "daniel.fabian@integral-it.ch";
