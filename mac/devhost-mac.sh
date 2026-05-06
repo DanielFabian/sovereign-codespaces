@@ -9,7 +9,7 @@
 #   up       — boot vfkit (foreground); HDD has higher boot priority than ISO
 #   destroy  — rm -rf the state dir (with confirm)
 #   status   — show state dir contents and disk sizes
-#   ssh      — discover VM IP and exec ssh into it
+#   ssh      — exec ssh through gvproxy's localhost forward
 #
 # ISO acquisition is deliberately manual: download the latest devhost-mac.iso
 # from the GitHub Releases page into $STATE_DIR/iso. The guest auto-upgrades
@@ -100,7 +100,24 @@ cmd_up() {
     kill "$gvproxy_pid" 2>/dev/null || true
     rm -f "$GVPROXY_SOCK" "$GVPROXY_PID"
   }
-  trap cleanup EXIT INT TERM
+  trap cleanup EXIT
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
+
+  for _ in $(seq 1 50); do
+    if [[ -e "$GVPROXY_SOCK" ]]; then
+      break
+    fi
+    if ! kill -0 "$gvproxy_pid" 2>/dev/null; then
+      [[ -f "$GVPROXY_LOG" ]] && tail -50 "$GVPROXY_LOG" >&2 || true
+      die "gvproxy exited before creating $GVPROXY_SOCK"
+    fi
+    sleep 0.1
+  done
+  if [[ ! -e "$GVPROXY_SOCK" ]]; then
+    [[ -f "$GVPROXY_LOG" ]] && tail -50 "$GVPROXY_LOG" >&2 || true
+    die "timed out waiting for gvproxy socket $GVPROXY_SOCK"
+  fi
 
   log "booting devhost-mac (vfkit, gvproxy networking, ISO attached for re-install)"
   local gui_args=()
@@ -111,7 +128,7 @@ cmd_up() {
     # EINVAL under vfkit 0.6.3 and only adds noise while debugging.
     gui_args=(--gui)
   fi
-  exec vfkit \
+  vfkit \
     "${gui_args[@]}" \
     --cpus "$VCPUS" \
     --memory "$MEMORY_MIB" \
