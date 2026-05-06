@@ -89,9 +89,9 @@ cmd_up() {
     # devices. Without these the flag is silently a no-op.
     gui_args=(
       --gui
-      --device virtio-gpu
-      --device virtio-input,keyboard
-      --device virtio-input,pointing
+      --device "virtio-gpu"
+      --device "virtio-input,keyboard"
+      --device "virtio-input,pointing"
     )
   fi
   exec vfkit \
