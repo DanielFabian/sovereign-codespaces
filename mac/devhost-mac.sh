@@ -82,10 +82,20 @@ cmd_up() {
   #     "vmnet-shared" subtype
   # First-run iteration on the Mac will resolve these; the structure is right.
   log "booting devhost-mac (vfkit, NAT networking, ISO attached for re-install)"
-  local gui_flag=()
-  if (( gui )); then gui_flag=(--gui); log "  with GUI window"; fi
+  local gui_args=()
+  if (( gui )); then
+    log "  with GUI window"
+    # vfkit's --gui only opens a window if we also wire up a GPU and input
+    # devices. Without these the flag is silently a no-op.
+    gui_args=(
+      --gui
+      --device virtio-gpu
+      --device virtio-input,keyboard
+      --device virtio-input,pointing
+    )
+  fi
   exec vfkit \
-    "${gui_flag[@]}" \
+    "${gui_args[@]}" \
     --cpus "$VCPUS" \
     --memory "$MEMORY_MIB" \
     --bootloader "efi,variable-store=$EFI_STORE,create" \
