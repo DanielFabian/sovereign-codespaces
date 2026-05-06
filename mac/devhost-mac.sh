@@ -85,14 +85,10 @@ cmd_up() {
   local gui_args=()
   if (( gui )); then
     log "  with GUI window"
-    # vfkit's --gui only opens a window if we also wire up a GPU and input
-    # devices. Without these the flag is silently a no-op.
-    gui_args=(
-      --gui
-      --device "virtio-gpu"
-      --device "virtio-input,keyboard"
-      --device "virtio-input,pointing"
-    )
+    # vfkit's --gui renders the guest framebuffer. Do not add virtio-gpu /
+    # virtio-input devices: on the aarch64 NixOS guest virtio_gpu probes with
+    # EINVAL under vfkit 0.6.3 and only adds noise while debugging.
+    gui_args=(--gui)
   fi
   exec vfkit \
     "${gui_args[@]}" \

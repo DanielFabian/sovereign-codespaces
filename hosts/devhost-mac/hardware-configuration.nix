@@ -25,7 +25,9 @@
     "virtio_pci"
     "virtio_net"
     "virtio_rng"
+    "virtio_console"
   ];
+  boot.initrd.kernelModules = [ "virtio_console" ];
 
   # Root fs — installer formats /dev/vda2 with label "nixos".
   fileSystems."/" = {
@@ -49,11 +51,14 @@
 
   nixpkgs.hostPlatform = lib.mkDefault "aarch64-linux";
 
-  # Surface kernel printk on both virtio-console (so headless serial.log
-  # captures everything) and the framebuffer (so `--gui` shows the boot).
-  # Last `console=` wins for the init terminal; all of them get printk.
+  # Surface kernel printk on both the framebuffer (so `--gui` can show boot)
+  # and virtio-console (so headless serial.log captures the useful path).
+  # Last `console=` wins for /dev/console; keep hvc0 last so systemd/status
+  # output and emergency shells go to vfkit's serial log instead of the
+  # mostly-useless framebuffer.
   boot.kernelParams = [
-    "console=hvc0"
     "console=tty0"
+    "console=hvc0"
+    "loglevel=7"
   ];
 }
