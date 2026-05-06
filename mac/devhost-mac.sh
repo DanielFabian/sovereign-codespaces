@@ -81,7 +81,7 @@ cmd_up() {
     --bootloader "efi,variable-store=$EFI_STORE,create" \
     --device "virtio-blk,path=$OS_DISK" \
     --device "virtio-blk,path=$WS_DISK" \
-    --device "virtio-blk,path=$iso,readOnly" \
+    --device "virtio-blk,path=$iso,readonly" \
     --device "virtio-net,nat,mac=72:20:43:00:00:01" \
     --device "virtio-rng" \
     --device "virtio-serial,logFilePath=$STATE_DIR/serial.log"
