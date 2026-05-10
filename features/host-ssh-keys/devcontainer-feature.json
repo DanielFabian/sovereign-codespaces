@@ -7,7 +7,7 @@
     "mounts": [
         {
             "source": "${localEnv:HOME}/.ssh",
-            "target": "/home/vscode/.ssh",
+            "target": "${containerEnv:HOME}/.ssh",
             "type": "bind"
         }
     ]
