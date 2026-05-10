@@ -1,14 +1,15 @@
 {
     "id": "host-ssh-keys",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "name": "Host SSH Keys",
-    "description": "Bind-mount the host's ~/.ssh into the container (read-only). Lets you `git push` and `ssh` from inside a devcontainer using the host's keys, with no in-container key material to leak. Pairs with the sovereign-codespaces devhost where the user's key is passphrase-less by design.",
+    "description": "Bind-mount the host's ~/.ssh into the container at a neutral path and symlink $HOME/.ssh to it at runtime. Lets you `git push` and `ssh` from inside a devcontainer using the host's keys, with no in-container key material to leak. Pairs with the sovereign-codespaces devhost where the user's key is passphrase-less by design.",
     "documentationURL": "https://github.com/DanielFabian/sovereign-codespaces/tree/main/features/host-ssh-keys",
     "mounts": [
         {
             "source": "${localEnv:HOME}/.ssh",
-            "target": "${containerEnv:HOME}/.ssh",
+            "target": "/run/host-ssh",
             "type": "bind"
         }
-    ]
+    ],
+    "postCreateCommand": "/usr/local/sbin/host-ssh-keys-link"
 }
