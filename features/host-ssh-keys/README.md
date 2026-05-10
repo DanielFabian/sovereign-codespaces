@@ -34,8 +34,12 @@ containers (locked-down, narrow toolset, untrusted code) should *not* use
 this Feature — wire any push/publish capability in as an explicit,
 reviewable tool instead.
 
-The mount is read-write because the devcontainer Features spec doesn't
-expose a `readonly` flag on `mounts` (the schema rejects it). In partner
-mode this is consistent with the trust posture; in any stricter mode,
-prefer agent-socket forwarding instead of this Feature.
+The mount is read-write. The devcontainer Features spec doesn't
+expose a `readonly` flag on `mounts` (the schema rejects it), so
+the host's keys are technically writeable from the container.
+In partner mode this is consistent with the trust posture; in any
+stricter mode, prefer agent-socket forwarding instead of this Feature.
 
+Implementation note: the bind lands at `/run/host-ssh` and is
+symlinked to `$HOME/.ssh` at container start, so the Feature works
+regardless of the image's runtime user (vscode, node, root, etc.).
