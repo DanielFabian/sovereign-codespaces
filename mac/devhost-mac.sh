@@ -26,7 +26,7 @@ GVPROXY_LOG="$STATE_DIR/gvproxy.log"
 GVPROXY_PID="$STATE_DIR/gvproxy.pid"
 
 # Sizing — generous defaults; cattle disks, easy to recreate.
-OS_DISK_SIZE="${DEVHOST_MAC_OS_SIZE:-40G}"
+OS_DISK_SIZE="${DEVHOST_MAC_OS_SIZE:-120G}"
 WS_DISK_SIZE="${DEVHOST_MAC_WS_SIZE:-200G}"
 VCPUS="${DEVHOST_MAC_VCPUS:-8}"
 MEMORY_MIB="${DEVHOST_MAC_MEMORY:-16384}"
